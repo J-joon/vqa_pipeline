@@ -5,8 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "tyro"
+    "tyro",
+    "opencv-python",
+    "static_error_handler",
+    "pillow",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vqa_pipeline"]
 
 [build-system]
 requires = ["hatchling >= 1.26"]

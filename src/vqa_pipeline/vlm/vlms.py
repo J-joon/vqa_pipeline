@@ -8,13 +8,12 @@ import torch
 from PIL import Image
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
 from transformers import AutoModel, AutoTokenizer, AutoConfig
+
 import math
 from static_error_handler import *
+from accelerate import init_empty_weights, dispatch_model
 
 #=== InternVL3 ===
-
-
-
 @dataclass
 class InternVL3(VLM):
     model: object
@@ -125,11 +124,9 @@ class InternVL3(VLM):
         return device_map
 
     @staticmethod
-    def create(path: str = 'OpenGVLab/InternVL3-1B') -> Result[VLM, str]:
+    def create(path: str = 'OpenGVLab/InternVL3-14B') -> Result[VLM, str]:
         try:
             device_map = InternVL3.split_model(path)
-            # If you set `load_in_8bit=True`, you will need two 80GB GPUs.
-            # If you set `load_in_8bit=False`, you will need at least three 80GB GPUs.
             model = AutoModel.from_pretrained(
                 path,
                 torch_dtype=torch.bfloat16,
@@ -138,8 +135,10 @@ class InternVL3(VLM):
                 use_flash_attn=True,
                 trust_remote_code=True,
                 device_map=device_map).eval()
+            # If you set `load_in_8bit=True`, you will need two 80GB GPUs.
+            # If you set `load_in_8bit=False`, you will need at least three 80GB GPUs.
             tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True, use_fast=False)
-            generation_config = dict(max_new_tokens=1024, do_sample=True)
+            generation_config = dict(max_new_tokens=4096, do_sample=True)
             return Ok(InternVL3(model = model, tokenizer=tokenizer, generation_config = generation_config))
         except Exception as e:
             return Err(error=e)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from ._typeclass import VLM
+from vqa_pipeline.image import ImageProvider
 from dataclasses import dataclass
 from typing import Protocol, Optional, runtime_checkable, TypeVar
 from static_error_handler import *
@@ -14,6 +15,18 @@ from static_error_handler import *
 from accelerate import init_empty_weights, dispatch_model
 
 #=== InternVL3 ===
+@runtime_checkable
+class LabelProvider(Protocol):
+    @property
+    def frame_index(self) -> int: ...
+
+    @property
+    def camera_type(self) -> str: ...
+
+@runtime_checkable
+class ImageLabelProvider(ImageProvider, LabelProvider, Protocol):
+    pass
+
 @dataclass
 class InternVL3(VLM):
     model: object
@@ -143,11 +156,11 @@ class InternVL3(VLM):
         except Exception as e:
             return Err(error=e)
 
-    def question(self, images: list[Image.Image], prompts: dict[str, str]) -> Result[dict[str, str], str]:
-        ls_pixel_values = [ InternVL3.load_image(image, max_num=12).to(torch.bfloat16).cuda() for image in images ]
+    def question(self, images: list[ImageLabelProvider], prompts: dict[str, str]) -> Result[dict[str, str], str]:
+        ls_pixel_values = [ InternVL3.load_image(image.image, max_num=12).to(torch.bfloat16).cuda() for image in images ]
+        prefix = ''.join([ f"Frame-{image.frame_index}_{image.camera_type}" for image in images ])
         pixel_values = torch.cat(ls_pixel_values, dim=0)
         num_patches_list = [ pixel_values.size(0) for pixel_values in ls_pixel_values ]
-        prefix = ''.join([f'Frame-{i+1}: <image>\n' for i in range(len(num_patches_list))])
         history = None
         frame_information = dict()
         try:

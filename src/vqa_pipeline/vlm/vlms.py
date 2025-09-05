@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ._typeclass import VLM
+from ._typeclass import VLM, T_Image
 from vqa_pipeline.image import ImageProvider
 from dataclasses import dataclass
 from typing import Protocol, Optional, runtime_checkable, TypeVar

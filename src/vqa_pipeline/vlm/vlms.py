@@ -156,18 +156,18 @@ class InternVL3(VLM):
         except Exception as e:
             return Err(error=e)
 
-    def question(self, images: list[ImageLabelProvider], prompts: dict[str, str]) -> Result[dict[str, str], str]:
+    def question(self, images: list[ImageLabelProvider], prompts: tuple[tuple[str, str],...]) -> Result[tuple[tuple[str, str],...], str]:
         ls_pixel_values = [ InternVL3.load_image(image.image, max_num=12).to(torch.bfloat16).cuda() for image in images ]
         prefix = ''.join([ f"Frame-{image.frame_index}_{image.camera_type}" for image in images ])
         pixel_values = torch.cat(ls_pixel_values, dim=0)
         num_patches_list = [ pixel_values.size(0) for pixel_values in ls_pixel_values ]
         history = None
-        frame_information = dict()
+        frame_information = list()
         try:
-            for key, prompt in prompts.items():
+            for key, prompt in prompts:
                 question = prefix + prompt
                 response, history = self.model.chat(self.tokenizer, pixel_values, question, self.generation_config, num_patches_list=num_patches_list, history=history, return_history=True)
-                frame_information[key] = response
-            return Ok(frame_information)
+                frame_information.append((key, response))
+            return Ok(tuple(frame_information))
         except Exception as e:
             return Err(e)

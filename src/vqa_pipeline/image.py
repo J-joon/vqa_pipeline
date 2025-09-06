@@ -6,5 +6,4 @@ t_image: TypeAlias = Image
 
 @runtime_checkable
 class ImageProvider(Protocol):
-    @property
-    def image(self) -> t_image: ...
+    image: t_image

@@ -17,11 +17,8 @@ from accelerate import init_empty_weights, dispatch_model
 #=== InternVL3 ===
 @runtime_checkable
 class LabelProvider(Protocol):
-    @property
-    def frame_index(self) -> int: ...
-
-    @property
-    def camera_type(self) -> str: ...
+    frame_index: int
+    camera_type: str
 
 @runtime_checkable
 class ImageLabelProvider(ImageProvider, LabelProvider, Protocol):

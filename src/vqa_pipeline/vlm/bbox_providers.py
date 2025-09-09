@@ -14,7 +14,7 @@ from transformers import (
 import torch
 T_Model: TypeAlias = Any
 T_Processor: TypeAlias = Any
-@dataclass
+@dataclass(frozen=True)
 class GroundingDino(BBoxProvider):
     model_id: str = "IDEA-Research/grounding-dino-base"
     device: Literal["cuda", "cpu"] = "cuda"

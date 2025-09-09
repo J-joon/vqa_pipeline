@@ -44,7 +44,7 @@ class GroundingDino(BBoxProvider):
         def run(processor: T_Processor) -> Result[tuple[Box, ...], str]:
             try:
                 inputs = processor(
-                    images=[image.image],
+                    images=image.image,
                     text=query,
                     return_tensors="pt"
                     ).to(device)

@@ -3,7 +3,7 @@ from ._typeclass import BBoxProvider, T_Image
 from vqa_pipeline.image import ImageProvider
 from vqa_pipeline import Box
 from dataclasses import dataclass
-from trochvision.transforms.functional import to_pil_image
+from torchvision.transforms.functional import to_pil_image
 from typing import Literal, Any, TypeAlias
 from static_error_handler import Ok, Err, Result
 from functools import cache

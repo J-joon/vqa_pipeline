@@ -69,6 +69,7 @@ class GroundingDino(BBoxProvider):
                         )
                     except Exception as e:
                         return Err(f"fail during processing result: {e}")
+                    try:
                         result = results[0]
                         boxes = ( Box.from_list(box, label) for box, label in zip(result["boxes"], result["labels"]) )
                         return self.model.and_then(run_model)

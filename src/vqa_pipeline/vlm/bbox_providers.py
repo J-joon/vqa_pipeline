@@ -26,7 +26,7 @@ class GroundingDino(BBoxProvider):
     @cache
     def model(self, ) -> Result[T_Model, str]:
         try:
-            model = AutoProcessor.from_pretrained(self.model_id)
+            model = AutoModelForZeroShotObjectDetection.from_pretrained(self.model_id).to(self.device)
             return Ok(model)
         except Exception as e:
             return Err(str(e))
@@ -42,11 +42,12 @@ class GroundingDino(BBoxProvider):
 
     def query(self, image: T_Image, query: str) -> Result[tuple[Box, ...], str]:
         device = self.device
+        image = to_pil_image(image.image)
         def run(processor: T_Processor) -> Result[tuple[Box, ...], str]:
             try:
                 try:
                     inputs = processor(
-                        images=to_pil_image(image.image),
+                        images=image,
                         text=query,
                         return_tensors="pt"
                         ).to(device)
@@ -61,7 +62,7 @@ class GroundingDino(BBoxProvider):
                             inputs.input_ids,
                             threshold=self.threshold,
                             text_threshold=self.text_threshold,
-                            target_sizes=[image.image.size[::-1]],
+                            target_sizes=[image.size[::-1]],
                         )
                         result = results[0]
                         boxes = ( Box.from_list(box, label) for box, label in zip(result["boxes"], result["labels"]) )

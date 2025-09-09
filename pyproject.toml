@@ -3,12 +3,16 @@ name = "vqa-pipeline"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 dependencies = [
     "tyro",
     "opencv-python",
     "static_error_handler",
     "pillow",
+    "torch",
+    "transformers",
+    "black",
+    "mypy",
 ]
 
 [tool.hatch.build.targets.wheel]

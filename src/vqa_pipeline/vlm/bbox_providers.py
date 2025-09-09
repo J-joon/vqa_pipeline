@@ -3,6 +3,7 @@ from ._typeclass import BBoxProvider, T_Image
 from vqa_pipeline.image import ImageProvider
 from vqa_pipeline import Box
 from dataclasses import dataclass
+from trochvision.transforms.functional import to_pil_image
 from typing import Literal, Any, TypeAlias
 from static_error_handler import Ok, Err, Result
 from functools import cache
@@ -43,11 +44,14 @@ class GroundingDino(BBoxProvider):
         device = self.device
         def run(processor: T_Processor) -> Result[tuple[Box, ...], str]:
             try:
-                inputs = processor(
-                    images=image.image,
-                    text=query,
-                    return_tensors="pt"
-                    ).to(device)
+                try:
+                    inputs = processor(
+                        images=to_pil_image(image.image),
+                        text=query,
+                        return_tensors="pt"
+                        ).to(device)
+                except Exception as e:
+                    return Err(f"processor: {e}")
                 def run_model(model: T_Model) -> Result[tuple[Box, ...], str]:
                     try:
                         with torch.no_grad():

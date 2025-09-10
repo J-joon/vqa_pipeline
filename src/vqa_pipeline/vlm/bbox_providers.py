@@ -69,7 +69,7 @@ class GroundingDino(BBoxProvider):
                     return Err(f"fail during processing result: {e}")
                 try:
                     result = results[0]
-                    boxes = ( Box.from_list(box.tolist(), label) for box, label in zip(result["boxes"], result["labels"]) )
+                    boxes = ( Box.from_list(box.tolist(), label) for box, label in zip(result["boxes"], result["text_labels"]) )
                     return Ok(boxes)
                 except Exception as e:
                     return Err(f"run_model: {e}")

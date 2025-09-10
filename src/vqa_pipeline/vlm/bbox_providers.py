@@ -70,7 +70,7 @@ class GroundingDino(BBoxProvider):
                 try:
                     result = results[0]
                     boxes = ( Box.from_list(box, label) for box, label in zip(result["boxes"], result["labels"]) )
-                    return boxes
+                    return Ok(boxes)
                 except Exception as e:
                     return Err(f"run_model: {e}")
             return self.model.and_then(run_model)

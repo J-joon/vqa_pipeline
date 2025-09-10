@@ -44,37 +44,34 @@ class GroundingDino(BBoxProvider):
         image = image.image
         def run(processor: T_Processor) -> Result[tuple[Box, ...], str]:
             try:
-                try:
-                    inputs = processor(
-                        images=image,
-                        text=query,
-                        return_tensors="pt"
-                        ).to(device)
-                except Exception as e:
-                    return Err(f"processor: {e}")
-                def run_model(model: T_Model) -> Result[tuple[Box, ...], str]:
-                    try:
-                        with torch.no_grad():
-                            outputs = model(**inputs)
-                    except Exception as e:
-                        return Err(f"fail during inference of Grounding Dino: {e}")
-                    try:
-                        results = processor.post_process_grounded_object_detection(
-                            outputs,
-                            inputs.input_ids,
-                            threshold=self.threshold,
-                            text_threshold=self.text_threshold,
-                            target_sizes=[image.size[::-1]],
-                        )
-                    except Exception as e:
-                        return Err(f"fail during processing result: {e}")
-                    try:
-                        result = results[0]
-                        boxes = ( Box.from_list(box, label) for box, label in zip(result["boxes"], result["labels"]) )
-                        return self.model.and_then(run_model)
-                    except Exception as e:
-                        return Err(f"run_model: {e}")
-                return self.model.and_then(run_model)
+                inputs = processor(
+                    images=image,
+                    text=query,
+                    return_tensors="pt"
+                    ).to(device)
             except Exception as e:
-                return Err(f"run: {e}")
+                return Err(f"processor: {e}")
+            def run_model(model: T_Model) -> Result[tuple[Box, ...], str]:
+                try:
+                    with torch.no_grad():
+                        outputs = model(**inputs)
+                except Exception as e:
+                    return Err(f"fail during inference of Grounding Dino: {e}")
+                try:
+                    results = processor.post_process_grounded_object_detection(
+                        outputs,
+                        inputs.input_ids,
+                        threshold=self.threshold,
+                        text_threshold=self.text_threshold,
+                        target_sizes=[image.size[::-1]],
+                    )
+                except Exception as e:
+                    return Err(f"fail during processing result: {e}")
+                try:
+                    result = results[0]
+                    boxes = ( Box.from_list(box, label) for box, label in zip(result["boxes"], result["labels"]) )
+                    return boxes
+                except Exception as e:
+                    return Err(f"run_model: {e}")
+            return self.model.and_then(run_model)
         return self.processor.and_then(run)

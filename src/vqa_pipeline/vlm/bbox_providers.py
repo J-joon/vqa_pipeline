@@ -50,13 +50,13 @@ class GroundingDino(BBoxProvider):
                     return_tensors="pt"
                     ).to(device)
             except Exception as e:
-                return Err(f"processor: {e}")
+                return Err(f"GroundingDino.query.run: During calling processor(...): {e}")
             def run_model(model: T_Model) -> Result[tuple[Box, ...], str]:
                 try:
                     with torch.no_grad():
                         outputs = model(**inputs)
                 except Exception as e:
-                    return Err(f"fail during inference of Grounding Dino: {e}")
+                    return Err(f"GroundingDino.query.run.run_model: During inference of Grounding Dino: {e}")
                 try:
                     results = processor.post_process_grounded_object_detection(
                         outputs,
@@ -66,12 +66,12 @@ class GroundingDino(BBoxProvider):
                         target_sizes=[image.size[::-1]],
                     )
                 except Exception as e:
-                    return Err(f"fail during processing result: {e}")
+                    return Err(f"GroundingDino.query.run.run_model: During processing result: {e}")
                 try:
                     result = results[0]
                     boxes = ( Box.from_list(box.tolist(), label) for box, label in zip(result["boxes"], result["text_labels"]) )
                     return Ok(boxes)
                 except Exception as e:
-                    return Err(f"run_model: {e}")
+                    return Err(f"GroundingDino.query.run.run_model: During Converting results into output format: {e}")
             return self.model.and_then(run_model)
         return self.processor.and_then(run)

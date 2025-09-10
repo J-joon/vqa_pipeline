@@ -3,7 +3,6 @@ from ._typeclass import BBoxProvider, T_Image
 from vqa_pipeline.image import ImageProvider
 from vqa_pipeline import Box
 from dataclasses import dataclass
-from torchvision.transforms.functional import to_pil_image
 from typing import Literal, Any, TypeAlias
 from static_error_handler import Ok, Err, Result
 from functools import cache
@@ -42,7 +41,7 @@ class GroundingDino(BBoxProvider):
 
     def query(self, image: T_Image, query: str) -> Result[tuple[Box, ...], str]:
         device = self.device
-        image = to_pil_image(image.image)
+        image = image.image
         def run(processor: T_Processor) -> Result[tuple[Box, ...], str]:
             try:
                 try:
